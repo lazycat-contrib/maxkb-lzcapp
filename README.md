@@ -20,3 +20,7 @@ There is no LazyCat-device runtime or RAG/model/workflow end-to-end validation. 
 Only MiaoMiao community publication is authorized; official-store publication is disabled. Automatic store publishers stay disabled until the verified Release asset is submitted explicitly. No file-chooser interception is bundled. The normal LazyCat login boundary is retained.
 
 Model-provider API credentials must be supplied by the user in MaxKB, and none are bundled.
+
+## Community release
+
+MaxKB 2.10.8-lts is published as MiaoMiao application 656, APPROVED, AI Knowledge category 114. Wish 8 was replied to and completed. Build run 40851252034 succeeded without smoke. The 20992-byte LPK SHA256 is `be2dc759558c8968c6b2a82a994789d78a975d91ca7157d3fcf1eb08a8567f2f`, verified after download. The previous failed runtime check is not reported as passing.
