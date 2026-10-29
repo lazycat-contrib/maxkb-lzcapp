@@ -1,15 +1,12 @@
 params:
   - id: default_password
     type: secret
-    name: Initial admin password
-    description: >-
-      Initial password for the default admin account. Kept secret in deployment
-      parameters; login autofill is not used because the login form requires a
-      first-time password change.
-    default_value: "$random(len=12)"
+    name: Admin password
+    description: Initial password for the admin account. Update this if the password is changed inside MaxKB, so autofill stays synchronized.
+    default_value: "$random(len=16)"
     optional: false
 locales:
   zh:
     default_password:
-      name: 初始管理员密码
-      description: 默认账号 admin 的初始密码，仅首次登录有效，首次登录后请立即在应用内修改。
+      name: 管理员密码
+      description: admin 账号的初始随机密码；应用内改密后请同步更新这里，登录页会填充但不会自动提交。

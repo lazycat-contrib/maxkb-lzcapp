@@ -1,17 +1,22 @@
 # MaxKB for LazyCat
 
 - Upstream: https://github.com/1Panel-dev/MaxKB
-- Package: `community.lazycat.app.maxkb`; initial upstream version 2.10.8-lts (LTS release family).
+- Package: `community.lazycat.app.maxkb`; upstream version family retains the full `-lts` suffix.
 - Official image: `docker.io/1panel/maxkb`; runtime mirror: `docker.1ms.run/1panel/maxkb`.
-- Image delivery requires matching source/mirror digests; target Linux amd64, OS 1.5.0+.
-- Single container runs MaxKB with embedded PostgreSQL and Redis; persistent state at `/lzcapp/var/data` → `/opt/maxkb`.
-- Initial admin `admin` gets a random deployment-parameter password via `MAXKB_CONFIG_TYPE=ENV` + `MAXKB_DEFAULT_PASSWORD`. No hardcoded production credential; login form requires first-time password change, so simple autofill is intentionally not configured.
-- Login throttling is upstream behavior: repeated failures trigger a captcha, then a temporary lock. This is expected.
-- Telemetry/model providers must be configured in-app with user API keys; none are bundled.
-- Only MiaoMiao community publication is authorized. Both automatic store publishers are initially disabled; publish the verified versioned Release URL after checking its SHA256.
+- Matching source/mirror digests are required; target Linux amd64, LazyCat OS 1.5.0+.
+- The upstream all-in-one image contains MaxKB, PostgreSQL and Redis; `/lzcapp/var/data` mounts at `/opt/maxkb`.
+- PostgreSQL initialization and MaxKB use the same explicit database user and stable secret; the default bootstrap DB remains `postgres`, so upstream `init.sql` can create `maxkb`.
+- Redis and MaxKB use the same stable secret. A stable Django key is injected as well. No production credential values are committed.
+- `MAXKB_CONFIG_TYPE=ENV` and `MAXKB_DEFAULT_PASSWORD` initialize the admin password on the first database migration. Browser autofill is configured at `/admin/login`, with automatic submit disabled to avoid repeated failed-login attempts and captcha locks.
+- If the account password is changed inside MaxKB, synchronize its deployment parameter. Restart does not reset existing database accounts.
+- This is for a new MaxKB v2 installation, not direct reuse of a v1 data directory.
 
-The workflow smoke-tests the exact upstream image: readiness wait (first boot initializes DB and loads the local embedding model, several minutes), successful admin login with the deployment password, rejection of a wrong password, and credential persistence across restart.
+## Verification scope
 
-These are runner-level endpoint checks, not a LazyCat-device installation test. RAG quality, model connectivity, workflow execution and browser UI interactions have not been end-to-end tested on a LazyCat device.
+As explicitly requested, the workflow does not run Docker smoke or login tests. The previous smoke run failed and must not be treated as a successful runtime test. Current checks cover workflow/configuration structure, image digest delivery, versioned LPK construction and artifact SHA256 only.
 
-Existing organization secrets `APPSTORE_URL`, `APPSTORE_TOKEN`, and optional `PRIVATE_STORE_GROUP_CODES` are referenced explicitly, never committed as values.
+There is no LazyCat-device runtime or RAG/model/workflow end-to-end validation. Removing the smoke gate does not establish runtime correctness.
+
+Only MiaoMiao community publication is authorized; official-store publication is disabled. Automatic store publishers stay disabled until the verified Release asset is submitted explicitly. No file-chooser interception is bundled. The normal LazyCat login boundary is retained.
+
+Model-provider API credentials must be supplied by the user in MaxKB, and none are bundled.

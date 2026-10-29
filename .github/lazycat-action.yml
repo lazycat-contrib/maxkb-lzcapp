@@ -19,10 +19,10 @@ images:
     target: service
     service: maxkb
     source: docker.io/1panel/maxkb
-    channel: stable
+    channel: custom
     sort: semver
     tag_regex: '^v\d+\.\d+\.\d+-lts$'
-    version_regex: '^v(?P<version>\d+\.\d+\.\d+)-lts$'
+    version_regex: '^v(?P<version>\d+\.\d+\.\d+-lts)$'
     version_template: '{version}'
     delivery:
       mode: mirror

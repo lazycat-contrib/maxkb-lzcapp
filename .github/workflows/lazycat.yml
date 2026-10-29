@@ -1,79 +1,11 @@
-name: Verify and publish MaxKB
+name: Build MaxKB LPK
 on:
   workflow_dispatch:
 permissions:
   contents: write
   pull-requests: write
 jobs:
-  smoke:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Generate temporary test password
-        run: |
-          value=$(openssl rand -hex 24)
-          echo "::add-mask::$value"
-          echo "TEST_ADMIN_PASSWORD=$value" >> "$GITHUB_ENV"
-      - name: Start pinned upstream with random initial admin password
-        run: |
-          set -euo pipefail
-          docker volume create maxkb-smoke
-          docker run --detach --name maxkb --publish 127.0.0.1:18080:8080 \
-            --env MAXKB_CONFIG_TYPE=ENV \
-            --env MAXKB_DEFAULT_PASSWORD="$TEST_ADMIN_PASSWORD" \
-            --env MAXKB_DB_HOST=127.0.0.1 --env MAXKB_DB_PORT=5432 \
-            --env MAXKB_DB_NAME=maxkb --env MAXKB_DB_USER=maxkb \
-            --env MAXKB_REDIS_HOST=127.0.0.1 --env MAXKB_REDIS_PORT=6379 \
-            --env MAXKB_REDIS_DB=0 \
-            --mount type=volume,source=maxkb-smoke,target=/opt/maxkb \
-            1panel/maxkb:v2.10.8-lts@sha256:027fdb79e4ef9cd9579418e900ea94cf9521ee4ddc4dd0fc1b65af0245357d54 \
-            /usr/bin/start-all.sh
-      - name: Wait for readiness and verify admin login
-        run: |
-          set -euo pipefail
-          for i in $(seq 1 60); do
-            code=$(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 5 http://127.0.0.1:18080/) || code=000
-            [ "$code" = 200 ] && break
-            sleep 5
-          done
-          test "$code" = 200 || { docker logs --tail 60 maxkb; exit 1; }
-          status=$(curl --silent --show-error --output login-response.json --write-out '%{http_code}' \
-            --header 'Content-Type: application/json' \
-            --request POST \
-            --data "{\"username\":\"admin\",\"password\":\"$TEST_ADMIN_PASSWORD\"}" \
-            http://127.0.0.1:18080/api/user/login)
-          test "$status" = 200 || { cat login-response.json; exit 1; }
-          jq -e '.data.token' login-response.json
-          echo 'Initial admin login with deployment-provided password verified.'
-      - name: Verify wrong password is rejected and restart keeps database
-        run: |
-          set -euo pipefail
-          status=$(curl --silent --output /dev/null --write-out '%{http_code}' \
-            --header 'Content-Type: application/json' \
-            --request POST \
-            --data '{"username":"admin","password":"definitely-wrong"}' \
-            http://127.0.0.1:18080/api/user/login)
-          test "$status" = 400 || test "$status" = 401 || test "$status" = 1005 || { echo "unexpected $status"; exit 1; }
-          docker restart maxkb
-          for i in $(seq 1 60); do
-            code=$(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 5 http://127.0.0.1:18080/) || code=000
-            [ "$code" = 200 ] && break
-            sleep 5
-          done
-          test "$code" = 200 || { docker logs --tail 60 maxkb; exit 1; }
-          status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' \
-            --header 'Content-Type: application/json' \
-            --request POST \
-            --data "{\"username\":\"admin\",\"password\":\"$TEST_ADMIN_PASSWORD\"}" \
-            http://127.0.0.1:18080/api/user/login)
-          test "$status" = 200 || { echo "login after restart failed: $status"; exit 1; }
-          echo 'Wrong password rejected; credential persists across restart.'
-      - name: Remove test resources
-        if: always()
-        run: |
-          docker rm -f maxkb || true
-          docker volume rm maxkb-smoke || true
   lazycat:
-    needs: smoke
     uses: ca-x/lazycat-github-action/.github/workflows/lazycat.yml@v1
     with:
       operation: auto

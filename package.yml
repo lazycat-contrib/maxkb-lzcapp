@@ -1,5 +1,5 @@
 package: community.lazycat.app.maxkb
-version: 2.10.8
+version: 2.10.8-lts
 name: MaxKB
 description: Max Knowledge Brain - an open-source platform for building enterprise-grade AI agents with RAG pipelines, workflows and MCP tool use.
 min_os_version: "1.5.0"
