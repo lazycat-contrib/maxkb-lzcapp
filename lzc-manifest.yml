@@ -1,0 +1,37 @@
+application:
+  subdomain: maxkb
+  multi_instance: false
+  upstreams:
+    - location: /
+      backend: http://maxkb:8080/
+services:
+  maxkb:
+    # upstream: docker.io/1panel/maxkb:v2.10.8-lts
+    image: docker.1ms.run/1panel/maxkb:v2.10.8-lts
+    environment:
+      - MAXKB_CONFIG_TYPE=ENV
+      - MAXKB_DB_HOST=127.0.0.1
+      - MAXKB_DB_PORT=5432
+      - MAXKB_DB_NAME=maxkb
+      - MAXKB_DB_USER=maxkb
+      - MAXKB_DB_PASSWORD=postgres-internal
+      - MAXKB_REDIS_HOST=127.0.0.1
+      - MAXKB_REDIS_PORT=6379
+      - MAXKB_REDIS_DB=0
+      - MAXKB_REDIS_PASSWORD=redis-internal
+      - MAXKB_EMBEDDING_MODEL_PATH=/opt/maxkb-app/model/embedding
+      - MAXKB_EMBEDDING_MODEL_NAME=/opt/maxkb-app/model/embedding/shibing624_text2vec-base-chinese
+      - MAXKB_LOCAL_MODEL_HOST=127.0.0.1
+      - MAXKB_LOCAL_MODEL_PORT=11636
+      - MAXKB_LOCAL_MODEL_PROTOCOL=http
+      - |-
+        MAXKB_DEFAULT_PASSWORD={{ .U.default_password }}
+    binds:
+      - /lzcapp/var/data:/opt/maxkb
+usage: |
+  MaxKB 是企业级智能体平台：RAG 知识库问答、工作流编排和 MCP 工具调用。
+  默认管理员账号 admin，初始密码为部署时生成的随机密码（登录页会自动填充），
+  首次登录后请立即在应用内修改。PostgreSQL 与 Redis 内嵌同容器运行，
+  数据保存在应用内部数据目录，升级不会丢失。
+  首次启动需初始化数据库并加载本地向量化模型，可能需要数分钟。
+  大模型接入需在应用内自行配置 API Key；知识库问答依赖所配置的大模型服务。

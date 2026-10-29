@@ -1,0 +1,18 @@
+package: community.lazycat.app.maxkb
+version: 2.10.8
+name: MaxKB
+description: Max Knowledge Brain - an open-source platform for building enterprise-grade AI agents with RAG pipelines, workflows and MCP tool use.
+min_os_version: "1.5.0"
+homepage: https://github.com/1Panel-dev/MaxKB
+author: 1Panel-dev
+license: GPL-3.0
+permissions:
+  required:
+    - net.internet
+locales:
+  zh:
+    name: MaxKB
+    description: 开源企业级智能体平台，支持 RAG 知识库问答、工作流编排和 MCP 工具调用，可对接各类大模型。
+  en:
+    name: MaxKB
+    description: Open-source platform for enterprise AI agents with RAG pipelines, workflow orchestration and MCP tool use.

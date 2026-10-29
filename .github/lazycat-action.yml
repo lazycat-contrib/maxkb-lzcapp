@@ -1,0 +1,40 @@
+version: 1
+project:
+  root: .
+  build_config: lzc-build.yml
+  package_file: package.yml
+  output: dist/application.lpk
+  target_arch: amd64
+update:
+  strategy: publish
+  allow_downgrade: false
+  version_source:
+    type: image
+    image: maxkb
+build:
+  toolchains: []
+  run_buildscript: false
+images:
+  - id: maxkb
+    target: service
+    service: maxkb
+    source: docker.io/1panel/maxkb
+    channel: stable
+    sort: semver
+    tag_regex: '^v\d+\.\d+\.\d+-lts$'
+    version_regex: '^v(?P<version>\d+\.\d+\.\d+)-lts$'
+    version_template: '{version}'
+    delivery:
+      mode: mirror
+      require_digest_match: true
+release:
+  use_github_release_notes: true
+  store_changelog_format: plain
+stores:
+  official:
+    enabled: false
+  private:
+    enabled: false
+    skip_if_version_exists: true
+    name: MaxKB
+    summary: 企业级智能体平台，RAG 知识库问答与工作流编排
